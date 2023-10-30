@@ -51,7 +51,6 @@ class QMI8658C:
 
     def __init__(self,i2c_bus: I2C, address=0X6B) -> None:
         self.i2c_device = i2c_device.I2CDevice(i2c_bus, address)
-        #print(f"_device_id/_revision_id {self._device_id}/{self._revision_id}")
 
         if self._device_id != 0x05:
             raise RuntimeError("Failed to find QMI8658C")
