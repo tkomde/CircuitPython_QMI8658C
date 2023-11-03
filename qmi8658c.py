@@ -94,7 +94,7 @@ class GyroRange:  # pylint: disable=too-few-public-methods
 
 class AccRate:  # pylint: disable=too-few-public-methods
     """Allowed values for :py:attr:`accelerometer_rate`.
-    Accelerometer low power mode must be a gyro disabled.
+    Accelerometer low power(LP) mode must be a gyro disabled.
 
     * :py:attr:`AccRate.RATE_8000_HZ`
     * :py:attr:`AccRate.RATE_4000_HZ`
@@ -279,7 +279,7 @@ class QMI8658C:  # pylint: disable=too-many-instance-attributes
 
     @property
     def gyro(self) -> Tuple[float, float, float]:
-        """Gyroscope X, Y, and Z axis data in :math:`º/s`"""
+        """Gyroscope X, Y, and Z axis data in :math:`rad/s`"""
         raw_data = self._raw_gyro_data
         raw_x = raw_data[0][0]
         raw_y = raw_data[1][0]
@@ -293,7 +293,7 @@ class QMI8658C:  # pylint: disable=too-many-instance-attributes
         return (gyro_x, gyro_y, gyro_z)
 
     @property
-    def raw_acc_gyro(self) -> Tuple[float, float, float]:
+    def raw_acc_gyro(self) -> Tuple[float, float, float, float, float, float]:
         """Raw data extraction"""
         raw_data = self._raw_accel_gyro_data
 
