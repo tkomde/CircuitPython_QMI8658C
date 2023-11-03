@@ -111,15 +111,15 @@ class AccRate:  # pylint: disable=too-few-public-methods
 class GyroRate:  # pylint: disable=too-few-public-methods
     """Allowed values for :py:attr:`gyro_rate`.
 
-    * :py:attr:`AccRate.RATE_8000_HZ`
-    * :py:attr:`AccRate.RATE_4000_HZ`
-    * :py:attr:`AccRate.RATE_2000_HZ`
-    * :py:attr:`AccRate.RATE_1000_HZ`
-    * :py:attr:`AccRate.RATE_500_HZ`
-    * :py:attr:`AccRate.RATE_250_HZ`
-    * :py:attr:`AccRate.RATE_125_HZ`
-    * :py:attr:`AccRate.RATE_62_HZ`
-    * :py:attr:`AccRate.RATE_31_HZ`
+    * :py:attr:`GyroRate.RATE_8000_HZ`
+    * :py:attr:`GyroRate.RATE_4000_HZ`
+    * :py:attr:`GyroRate.RATE_2000_HZ`
+    * :py:attr:`GyroRate.RATE_1000_HZ`
+    * :py:attr:`GyroRate.RATE_500_HZ`
+    * :py:attr:`GyroRate.RATE_250_HZ`
+    * :py:attr:`GyroRate.RATE_125_HZ`
+    * :py:attr:`GyroRate.RATE_62_HZ`
+    * :py:attr:`GyroRate.RATE_31_HZ`
 
     """
 
