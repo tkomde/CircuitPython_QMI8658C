@@ -1,26 +1,45 @@
-# SPDX-FileCopyrightText: 2019 Bryan Siepert for Adafruit Industries
+# SPDX-FileCopyrightText: 2017 Scott Shawcroft, written for Adafruit Industries
+# SPDX-FileCopyrightText: Copyright (c) 2023 Taiki Komoda for JINS Inc.
 #
 # SPDX-License-Identifier: MIT
-
 """
-`qmi8658C`
+`qmi8658c`
 ================================================================================
 
 CircuitPython helper library for the QMI8658C 6-DoF Accelerometer and Gyroscope
 
+
+* Author(s): Taiki Komoda
+
+Implementation Notes
+--------------------
+
+**Software and Dependencies:**
+
+* Adafruit CircuitPython firmware for the supported boards:
+  https://circuitpython.org/downloads
+* Adafruit's Bus Device library: https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
+* Adafruit's Register library: https://github.com/adafruit/Adafruit_CircuitPython_Register
 """
 
 # imports
 
 __version__ = "0.0.0+auto.0"
+__repo__ = "https://github.com/jins-tkomoda/CircuitPython_QMI8658C.git"
+
 
 from math import radians
 from time import sleep
-from adafruit_register.i2c_struct import UnaryStruct, ROUnaryStruct
+from adafruit_register.i2c_struct import ROUnaryStruct
 from adafruit_register.i2c_struct_array import StructArray
-from adafruit_register.i2c_bit import RWBit
 from adafruit_register.i2c_bits import RWBits
 from adafruit_bus_device import i2c_device
+
+try:
+    from typing import Tuple
+    from busio import I2C
+except ImportError:
+    pass
 
 _QMI8658C_WHO_AM_I = 0x0  # WHO_AM_I register
 _QMI8658C_REVISION_ID = 0x1  # Divice ID register
@@ -28,7 +47,7 @@ _QMI8658C_REVISION_ID = 0x1  # Divice ID register
 _QMI8658C_TIME_OUT = 0x30  # time data byte register
 _QMI8658C_TEMP_OUT = 0x33  # temp data byte register
 _QMI8658C_ACCEL_OUT = 0x35  # base address for sensor data reads
-_QMI8658C_GYRO_OUT = 0x3b  # base address for sensor data reads
+_QMI8658C_GYRO_OUT = 0x3B  # base address for sensor data reads
 
 STANDARD_GRAVITY = 9.80665
 
@@ -99,7 +118,7 @@ class AccRate:  # pylint: disable=too-few-public-methods
     RATE_1000_HZ = 3
     RATE_500_HZ = 4
     RATE_250_HZ = 5
-    RATE_125_HZ = 6 #(default value)
+    RATE_125_HZ = 6  # (default value)
     RATE_62_HZ = 7
     RATE_31_HZ = 8
     RATE_LP_128_HZ = 12
@@ -129,31 +148,33 @@ class GyroRate:  # pylint: disable=too-few-public-methods
     RATE_1000_HZ = 3
     RATE_500_HZ = 4
     RATE_250_HZ = 5
-    RATE_125_HZ = 6 #(default value)
+    RATE_125_HZ = 6  # (default value)
     RATE_62_HZ = 7
     RATE_31_HZ = 8
-    
 
-class QMI8658C:
+
+class QMI8658C:  # pylint: disable=too-many-instance-attributes
+    """Driver for the QMI8658C 6-DoF accelerometer and gyroscope."""
+
     _device_id = ROUnaryStruct(_QMI8658C_WHO_AM_I, "B")
     _revision_id = ROUnaryStruct(_QMI8658C_REVISION_ID, "B")
 
     _ctrl1 = RWBits(8, 0x02, 0)
-    #_ctrl2 = RWBits(8, 0x03, 0)
+    # _ctrl2 = RWBits(8, 0x03, 0)
     _accelerometer_range = RWBits(3, 0x03, 4)
     _accelerometer_rate = RWBits(4, 0x03, 0)
-    #_ctrl3 = RWBits(8, 0x04, 0)
+    # _ctrl3 = RWBits(8, 0x04, 0)
     _gyro_range = RWBits(3, 0x04, 4)
     _gyro_rate = RWBits(4, 0x04, 0)
     _ctrl4 = RWBits(8, 0x05, 0)
     _ctrl5 = RWBits(8, 0x06, 0)
     _ctrl6 = RWBits(8, 0x07, 0)
-    #_ctrl7 = RWBits(8, 0x08, 0)
+    # _ctrl7 = RWBits(8, 0x08, 0)
     _accelerometer_enable = RWBits(1, 0x08, 0)
     _gyro_enable = RWBits(1, 0x08, 1)
-    
+
     _raw_time_data = StructArray(_QMI8658C_TIME_OUT, "<H", 3)
-    _raw_temp_data = StructArray(_QMI8658C_TEMP_OUT, "B", 2)#
+    _raw_temp_data = StructArray(_QMI8658C_TEMP_OUT, "B", 2)  #
     _raw_accel_data = StructArray(_QMI8658C_ACCEL_OUT, "<h", 6)
     _raw_gyro_data = StructArray(_QMI8658C_GYRO_OUT, "<h", 6)
     _raw_accel_gyro_data = StructArray(_QMI8658C_ACCEL_OUT, "<h", 12)
@@ -162,24 +183,24 @@ class QMI8658C:
     _acc_scale = 1
     _gyro_scale = 1
 
-    def __init__(self,i2c_bus: I2C, address=0X6B) -> None:
+    def __init__(self, i2c_bus: I2C, address=0x6B) -> None:
         self.i2c_device = i2c_device.I2CDevice(i2c_bus, address)
-        #print(f"_device_id/_revision_id {self._device_id}/{self._revision_id}")
+        # print(f"_device_id/_revision_id {self._device_id}/{self._revision_id}")
 
         if self._device_id != 0x05:
             raise RuntimeError("Failed to find QMI8658C")
 
-        #Config
+        # Config
         # REG CTRL1 Enables 4-wire SPI interface,  address auto increment, SPI read data big endian
         self._ctrl1 = 0b01100000
         # REG CTRL2 : QMI8658CAccRange_8g  and QMI8658CAccOdr_125Hz
-        #self._ctrl2 = (2 << 4) + 0b0110 
+        # self._ctrl2 = (2 << 4) + 0b0110
         self.accelerometer_range = AccRange.RANGE_8_G
         sleep(0.01)
         self.accelerometer_rate = AccRate.RATE_125_HZ
         sleep(0.01)
         # REG CTRL3 : QMI8658CGyrRange_512dps and QMI8658CGyrOdr_125Hz
-        #self._ctrl3 = (5 << 4) + 0b0110
+        # self._ctrl3 = (5 << 4) + 0b0110
         self.gyro_range = GyroRange.RANGE_512_DPS
         sleep(0.01)
         self.gyro_rate = GyroRate.RATE_125_HZ
@@ -191,7 +212,7 @@ class QMI8658C:
         # REG CTRL6 : Disables Motion on Demand.
         self._ctrl6 = 0x00
         # REG CTRL7 : Enable Gyroscope And Accelerometer
-        #self._ctrl7 = 0b00000011
+        # self._ctrl7 = 0b00000011
         sleep(0.01)
         self._accelerometer_enable = 1
         sleep(0.1)
@@ -200,13 +221,15 @@ class QMI8658C:
 
     @property
     def timestamp(self) -> int:
+        """Timestamp from boot up"""
         raw_timestamp = self._raw_time_data
         return raw_timestamp[0][0]
 
     @property
     def temperature(self) -> float:
+        """Chip temperature"""
         raw_temperature = self._raw_temp_data
-        temp = raw_temperature[0][0] /256 + raw_temperature[1][0]
+        temp = raw_temperature[0][0] / 256 + raw_temperature[1][0]
         return temp
 
     @property
@@ -244,7 +267,14 @@ class QMI8658C:
         """Raw data extraction"""
         raw_data = self._raw_accel_gyro_data
 
-        return (raw_data[0][0], raw_data[1][0], raw_data[2][0], raw_data[3][0], raw_data[4][0], raw_data[5][0])
+        return (
+            raw_data[0][0],
+            raw_data[1][0],
+            raw_data[2][0],
+            raw_data[3][0],
+            raw_data[4][0],
+            raw_data[5][0],
+        )
 
     @property
     def accelerometer_range(self) -> int:
@@ -255,7 +285,7 @@ class QMI8658C:
     def accelerometer_range(self, value: int) -> None:
         if (value < 0) or (value > 3):
             raise ValueError("accelerometer_range must be a AccRange")
-        
+
         if value == AccRange.RANGE_16_G:
             self._acc_scale = 2048
         if value == AccRange.RANGE_8_G:
@@ -265,7 +295,7 @@ class QMI8658C:
         if value == AccRange.RANGE_2_G:
             self._acc_scale = 16384
 
-        self._accelerometer_range = value 
+        self._accelerometer_range = value
         sleep(0.01)
 
     @property
@@ -275,12 +305,12 @@ class QMI8658C:
 
     @accelerometer_rate.setter
     def accelerometer_rate(self, value: int) -> None:
-        if (value < 0 or value > 15 or (value >= 9 and value <= 11)):
+        if value < 0 or value > 15 or 9 <= value <= 11:
             raise ValueError("accelerometer_rate must be a AccRate")
-        
-        if ((value >= 12 and value <= 15) and self._gyro_enable == 1):
+
+        if 12 <= value <= 15 and self._gyro_enable == 1:
             raise ValueError("accelerometer low power mode must be a gyro disabled")
-        
+
         self._accelerometer_rate = value
         sleep(0.01)
 
@@ -293,7 +323,7 @@ class QMI8658C:
     def gyro_range(self, value: int) -> None:
         if (value < 0) or (value > 7):
             raise ValueError("gyro_range must be a GyroRange")
-        
+
         if value == GyroRange.RANGE_16_DPS:
             self._gyro_scale = 2048
         if value == GyroRange.RANGE_32_DPS:
@@ -321,29 +351,31 @@ class QMI8658C:
 
     @gyro_rate.setter
     def gyro_rate(self, value: int) -> None:
-        if (value < 0 or value > 8):
+        if value < 0 or value > 8:
             raise ValueError("gyro_rate must be a GyroRate")
         self._gyro_rate = value
         sleep(0.01)
 
     @property
     def accelerometer_enable(self) -> int:
+        """Enable / disable accelerometer"""
         return self._accelerometer_enable
 
     @accelerometer_enable.setter
     def accelerometer_enable(self, value: int) -> None:
-        if (value < 0 or value > 1):
+        if value < 0 or value > 1:
             raise ValueError("accelerometer_enable must be a 0/1")
         self._accelerometer_enable = value
         sleep(0.1)
-        
+
     @property
     def gyro_enable(self) -> int:
+        """Enable / disable gyroscope"""
         return self._gyro_enable
 
     @gyro_enable.setter
     def gyro_enable(self, value: int) -> None:
-        if (value < 0 or value > 1):
+        if value < 0 or value > 1:
             raise ValueError("gyro_enable must be a 0/1")
         self._gyro_enable = value
         sleep(0.1)
