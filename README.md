@@ -31,3 +31,12 @@ while True:
     print("")
     time.sleep(1)
 ```
+
+## Note
+
+Accelerometer low power mode must be a gyro disabled.
+
+```
+sensor.gyro_enable = 0
+sensor.accelerometer_rate = AccRate.RATE_LP_21_HZ
+```

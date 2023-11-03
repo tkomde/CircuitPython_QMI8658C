@@ -43,9 +43,9 @@ class AccRange:  # pylint: disable=too-few-public-methods
 
     """
 
-    RANGE_2_G = 0  # +/- 2g (default value)
+    RANGE_2_G = 0  # +/- 2g
     RANGE_4_G = 1  # +/- 4g
-    RANGE_8_G = 2  # +/- 8g
+    RANGE_8_G = 2  # +/- 8g (default value)
     RANGE_16_G = 3  # +/- 16g
 
 
@@ -75,6 +75,7 @@ class GyroRange:  # pylint: disable=too-few-public-methods
 
 class AccRate:  # pylint: disable=too-few-public-methods
     """Allowed values for :py:attr:`accelerometer_rate`.
+    Accelerometer low power mode must be a gyro disabled.
 
     * :py:attr:`AccRate.RATE_8000_HZ`
     * :py:attr:`AccRate.RATE_4000_HZ`
@@ -98,7 +99,7 @@ class AccRate:  # pylint: disable=too-few-public-methods
     RATE_1000_HZ = 3
     RATE_500_HZ = 4
     RATE_250_HZ = 5
-    RATE_125_HZ = 6
+    RATE_125_HZ = 6 #(default value)
     RATE_62_HZ = 7
     RATE_31_HZ = 8
     RATE_LP_128_HZ = 12
@@ -128,7 +129,7 @@ class GyroRate:  # pylint: disable=too-few-public-methods
     RATE_1000_HZ = 3
     RATE_500_HZ = 4
     RATE_250_HZ = 5
-    RATE_125_HZ = 6
+    RATE_125_HZ = 6 #(default value)
     RATE_62_HZ = 7
     RATE_31_HZ = 8
     
@@ -138,13 +139,19 @@ class QMI8658C:
     _revision_id = ROUnaryStruct(_QMI8658C_REVISION_ID, "B")
 
     _ctrl1 = RWBits(8, 0x02, 0)
-    _ctrl2 = RWBits(8, 0x03, 0)
-    _ctrl3 = RWBits(8, 0x04, 0)
+    #_ctrl2 = RWBits(8, 0x03, 0)
+    _accelerometer_range = RWBits(3, 0x03, 4)
+    _accelerometer_rate = RWBits(4, 0x03, 0)
+    #_ctrl3 = RWBits(8, 0x04, 0)
+    _gyro_range = RWBits(3, 0x04, 4)
+    _gyro_rate = RWBits(4, 0x04, 0)
     _ctrl4 = RWBits(8, 0x05, 0)
     _ctrl5 = RWBits(8, 0x06, 0)
     _ctrl6 = RWBits(8, 0x07, 0)
-    _ctrl7 = RWBits(8, 0x08, 0)
-
+    #_ctrl7 = RWBits(8, 0x08, 0)
+    _accelerometer_enable = RWBits(1, 0x08, 0)
+    _gyro_enable = RWBits(1, 0x08, 1)
+    
     _raw_time_data = StructArray(_QMI8658C_TIME_OUT, "<H", 3)
     _raw_temp_data = StructArray(_QMI8658C_TEMP_OUT, "B", 2)#
     _raw_accel_data = StructArray(_QMI8658C_ACCEL_OUT, "<h", 6)
@@ -166,13 +173,17 @@ class QMI8658C:
         # REG CTRL1 Enables 4-wire SPI interface,  address auto increment, SPI read data big endian
         self._ctrl1 = 0b01100000
         # REG CTRL2 : QMI8658CAccRange_8g  and QMI8658CAccOdr_125Hz
-        #self._ctrl2 = (2 << 4) + 0b0110        
-        self.accelerometer_range = 2
-        self.accelerometer_rate = 5        
+        #self._ctrl2 = (2 << 4) + 0b0110 
+        self.accelerometer_range = AccRange.RANGE_8_G
+        sleep(0.01)
+        self.accelerometer_rate = AccRate.RATE_125_HZ
+        sleep(0.01)
         # REG CTRL3 : QMI8658CGyrRange_512dps and QMI8658CGyrOdr_125Hz
         #self._ctrl3 = (5 << 4) + 0b0110
-        self.gyro_range = 5
-        self.gyro_rate = 5        
+        self.gyro_range = GyroRange.RANGE_512_DPS
+        sleep(0.01)
+        self.gyro_rate = GyroRate.RATE_125_HZ
+        sleep(0.01)
         # REG CTRL4 : No magnetometer
         self._ctrl4 = 0x00
         # REG CTRL5 : Disables Gyroscope And Accelerometer Low-Pass Filter
@@ -180,7 +191,12 @@ class QMI8658C:
         # REG CTRL6 : Disables Motion on Demand.
         self._ctrl6 = 0x00
         # REG CTRL7 : Enable Gyroscope And Accelerometer
-        self._ctrl7 = 0b00000011
+        #self._ctrl7 = 0b00000011
+        sleep(0.01)
+        self._accelerometer_enable = 1
+        sleep(0.1)
+        self._gyro_enable = 1
+        sleep(0.1)
 
     @property
     def timestamp(self) -> int:
@@ -233,7 +249,7 @@ class QMI8658C:
     @property
     def accelerometer_range(self) -> int:
         """The measurement range of all accelerometer axes. Must be a `AccRange`"""
-        return (self._ctrl2 >> 4) & 0b0111
+        return self._accelerometer_range
 
     @accelerometer_range.setter
     def accelerometer_range(self, value: int) -> None:
@@ -249,25 +265,29 @@ class QMI8658C:
         if value == AccRange.RANGE_2_G:
             self._acc_scale = 16384
 
-        self._ctrl2 = (value << 4) + self.accelerometer_rate
+        self._accelerometer_range = value 
         sleep(0.01)
 
     @property
     def accelerometer_rate(self) -> int:
         """The measurement rate of all accelerometer axes. Must be a `AccRate`"""
-        return self._ctrl2 & 0b00001111
+        return self._accelerometer_rate
 
     @accelerometer_rate.setter
     def accelerometer_rate(self, value: int) -> None:
         if (value < 0 or value > 15 or (value >= 9 and value <= 11)):
             raise ValueError("accelerometer_rate must be a AccRate")
-        self._ctrl2 = (self.accelerometer_range << 4) + value
+        
+        if ((value >= 12 and value <= 15) and self._gyro_enable == 1):
+            raise ValueError("accelerometer low power mode must be a gyro disabled")
+        
+        self._accelerometer_rate = value
         sleep(0.01)
 
     @property
     def gyro_range(self) -> int:
         """The measurement range of all gyroscope axes. Must be a `GyroRange`"""
-        return (self._ctrl3 >> 4) & 0b0111
+        return self._gyro_range
 
     @gyro_range.setter
     def gyro_range(self, value: int) -> None:
@@ -291,17 +311,39 @@ class QMI8658C:
         if value == GyroRange.RANGE_2048_DPS:
             self._gyro_scale = 16
 
-        self._ctrl3 = (value << 4) + self.gyro_rate
+        self._gyro_range = value
         sleep(0.01)
 
     @property
     def gyro_rate(self) -> int:
         """The measurement rate of all gyroscope axes. Must be a `GyroRate`"""
-        return self._ctrl3 & 0b00001111
+        return self._gyro_rate
 
     @gyro_rate.setter
     def gyro_rate(self, value: int) -> None:
         if (value < 0 or value > 8):
             raise ValueError("gyro_rate must be a GyroRate")
-        self._ctrl3 = (self.gyro_range << 4) + value
+        self._gyro_rate = value
         sleep(0.01)
+
+    @property
+    def accelerometer_enable(self) -> int:
+        return self._accelerometer_enable
+
+    @accelerometer_enable.setter
+    def accelerometer_enable(self, value: int) -> None:
+        if (value < 0 or value > 1):
+            raise ValueError("accelerometer_enable must be a 0/1")
+        self._accelerometer_enable = value
+        sleep(0.1)
+        
+    @property
+    def gyro_enable(self) -> int:
+        return self._gyro_enable
+
+    @gyro_enable.setter
+    def gyro_enable(self, value: int) -> None:
+        if (value < 0 or value > 1):
+            raise ValueError("gyro_enable must be a 0/1")
+        self._gyro_enable = value
+        sleep(0.1)
