@@ -92,6 +92,14 @@ Accelerometer low power mode must be a gyro disabled.
     sensor.accelerometer_rate = AccRate.RATE_LP_21_HZ
 
 
+Documentation
+=============
+API documentation for this library can be found on `Read the Docs <https://circuitpython-qmi8658c.readthedocs.io/>`_.
+
+For information on building library documentation, please check out
+`this guide <https://learn.adafruit.com/creating-and-sharing-a-circuitpython-library/sharing-our-docs-on-readthedocs#sphinx-5-1>`_.
+
+
 Contributing
 ============
 

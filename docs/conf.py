@@ -30,7 +30,8 @@ extensions = [
 autodoc_mock_imports = ["adafruit_register", "adafruit_bus_device"]
 
 intersphinx_mapping = {
-    "python": ("https://docs.python.org/3", None),"BusDevice": ("https://docs.circuitpython.org/projects/busdevice/en/latest/", None),
+    "python": ("https://docs.python.org/3", None),
+    "BusDevice": ("https://docs.circuitpython.org/projects/busdevice/en/latest/", None),
     "Register": ("https://docs.circuitpython.org/projects/register/en/latest/", None),
     "CircuitPython": ("https://docs.circuitpython.org/en/latest/", None),
 }

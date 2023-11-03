@@ -154,7 +154,37 @@ class GyroRate:  # pylint: disable=too-few-public-methods
 
 
 class QMI8658C:  # pylint: disable=too-many-instance-attributes
-    """Driver for the QMI8658C 6-DoF accelerometer and gyroscope."""
+    """Driver for the QMI8658C 6-DoF accelerometer and gyroscope.
+
+    :param ~busio.I2C i2c_bus: The I2C bus the device is connected to
+    :param int address: The I2C device address. Defaults to :const:`0x68`
+
+    **Quickstart: Importing and using the device**
+
+        Here is an example of using the :class:`QMI8658C` class.
+        First you will need to import the libraries to use the sensor
+
+        .. code-block:: python
+
+            import board
+            import qmi8658c
+
+        Once this is done you can define your `board.I2C` object and define your sensor object
+
+        .. code-block:: python
+
+            i2c = board.I2C()  # uses board.SCL and board.SDA
+            sensor = qmi8658c.QMI8658C(i2c)
+
+        Now you have access to the :attr:`acceleration`, :attr:`gyro`
+        and :attr:`temperature` attributes
+
+        .. code-block:: python
+
+            acc_x, acc_y, acc_z = sensor.acceleration
+            gyro_x, gyro_y, gyro_z = sensor.gyro
+            temperature = sensor.temperature
+    """
 
     _device_id = ROUnaryStruct(_QMI8658C_WHO_AM_I, "B")
     _revision_id = ROUnaryStruct(_QMI8658C_REVISION_ID, "B")
