@@ -74,9 +74,11 @@ Usage Example
     mpu = qmi8658c.QMI8658C(i2c)
 
     while True:
-        print("Acceleration: X:%.2f, Y: %.2f, Z: %.2f m/s^2"%(mpu.acceleration))
-        print("Gyro X:%.2f, Y: %.2f, Z: %.2f degrees/s"%(mpu.gyro))
-        print("Temperature: %.2f C"%mpu.temperature)
+        ac = sensor.acceleration
+        gy = sensor.gyro
+        print(f"Acceleration: X:{ac[0]:.2f}, Y:{ac[1]:.2f}, Z:{ac[2]:.2f} m/s^2")
+        print(f"Gyro X:{gy[0]:.2f}, Y:{gy[1]:.2f}, Z:{gy[2]:.2f} rad/s")
+        print(f"Temperature: {sensor.temperature:.2f} C")
         print("")
         time.sleep(1)
 
