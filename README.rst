@@ -86,7 +86,7 @@ Usage Example
 Usage Note
 =============
 
-Accelerometer low power mode must be a gyro disabled.
+Accelerometer low power(LP) mode must be a gyro disabled.
 
 .. code-block:: python3
 
