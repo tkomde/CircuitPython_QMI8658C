@@ -208,6 +208,7 @@ class QMI8658C:  # pylint: disable=too-many-instance-attributes
     _raw_accel_data = Struct(_QMI8658C_ACCEL_OUT, "<hhh")
     _raw_gyro_data = Struct(_QMI8658C_GYRO_OUT, "<hhh")
     _raw_accel_gyro_data = Struct(_QMI8658C_ACCEL_OUT, "<hhhhhh")
+    _raw_accel_gyro_bytes = Struct(_QMI8658C_ACCEL_OUT, "BBBBBBBBBBBB")
 
     # these vars are called very frequently
     _acc_scale = 1
@@ -287,18 +288,18 @@ class QMI8658C:  # pylint: disable=too-many-instance-attributes
         return (gyro_x, gyro_y, gyro_z)
 
     @property
-    def raw_acc_gyro(self) -> Tuple[float, float, float, float, float, float]:
+    def raw_acc_gyro(self) -> Tuple[int, int, int, int, int, int]:
         """Raw data extraction"""
         raw_data = self._raw_accel_gyro_data
 
-        return (
-            raw_data[0],
-            raw_data[1],
-            raw_data[2],
-            raw_data[3],
-            raw_data[4],
-            raw_data[5],
-        )
+        return raw_data
+
+    @property
+    def raw_acc_gyro_bytes(self) -> Tuple[int, int, int, int, int, int, int, int, int, int, int, int]:
+        """Raw bytes extraction"""
+        raw_data = self._raw_accel_gyro_bytes
+
+        return raw_data
 
     @property
     def accelerometer_range(self) -> int:
