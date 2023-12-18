@@ -295,7 +295,9 @@ class QMI8658C:  # pylint: disable=too-many-instance-attributes
         return raw_data
 
     @property
-    def raw_acc_gyro_bytes(self) -> Tuple[int, int, int, int, int, int, int, int, int, int, int, int]:
+    def raw_acc_gyro_bytes(
+        self,
+    ) -> Tuple[int, int, int, int, int, int, int, int, int, int, int, int]:
         """Raw bytes extraction"""
         raw_data = self._raw_accel_gyro_bytes
 
