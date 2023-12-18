@@ -333,8 +333,7 @@ class QMI8658C:  # pylint: disable=too-many-instance-attributes
             raise ValueError("accelerometer_rate must be a AccRate")
 
         if 12 <= value <= 15 and self._gyro_enable == 1:
-            raise ValueError(
-                "accelerometer low power mode must be a gyro disabled")
+            raise ValueError("accelerometer low power mode must be a gyro disabled")
 
         self._accelerometer_rate = value
         sleep(0.01)
