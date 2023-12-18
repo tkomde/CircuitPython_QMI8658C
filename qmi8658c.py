@@ -30,8 +30,8 @@ __repo__ = "https://github.com/jins-tkomoda/CircuitPython_QMI8658C.git"
 
 from math import radians
 from time import sleep
-from adafruit_register.i2c_struct import ROUnaryStruct
-from adafruit_register.i2c_struct_array import StructArray
+from micropython import const
+from adafruit_register.i2c_struct import ROUnaryStruct, Struct
 from adafruit_register.i2c_bits import RWBits
 from adafruit_bus_device import i2c_device
 
@@ -41,13 +41,13 @@ try:
 except ImportError:
     pass
 
-_QMI8658C_WHO_AM_I = 0x0  # WHO_AM_I register
-_QMI8658C_REVISION_ID = 0x1  # Divice ID register
+_QMI8658C_WHO_AM_I = const(0x0)  # WHO_AM_I register
+_QMI8658C_REVISION_ID = const(0x1)  # Divice ID register
 
-_QMI8658C_TIME_OUT = 0x30  # time data byte register
-_QMI8658C_TEMP_OUT = 0x33  # temp data byte register
-_QMI8658C_ACCEL_OUT = 0x35  # base address for sensor data reads
-_QMI8658C_GYRO_OUT = 0x3B  # base address for sensor data reads
+_QMI8658C_TIME_OUT = const(0x30)  # time data byte register
+_QMI8658C_TEMP_OUT = const(0x33)  # temp data byte register
+_QMI8658C_ACCEL_OUT = const(0x35)  # base address for sensor data reads
+_QMI8658C_GYRO_OUT = const(0x3B)  # base address for sensor data reads
 
 STANDARD_GRAVITY = 9.80665
 
@@ -62,10 +62,10 @@ class AccRange:  # pylint: disable=too-few-public-methods
 
     """
 
-    RANGE_2_G = 0  # +/- 2g
-    RANGE_4_G = 1  # +/- 4g
-    RANGE_8_G = 2  # +/- 8g (default value)
-    RANGE_16_G = 3  # +/- 16g
+    RANGE_2_G = const(0)  # +/- 2g
+    RANGE_4_G = const(1)  # +/- 4g
+    RANGE_8_G = const(2)  # +/- 8g (default value)
+    RANGE_16_G = const(3)  # +/- 16g
 
 
 class GyroRange:  # pylint: disable=too-few-public-methods
@@ -82,14 +82,14 @@ class GyroRange:  # pylint: disable=too-few-public-methods
 
     """
 
-    RANGE_16_DPS = 0  # +/- 16 deg/s
-    RANGE_32_DPS = 1  # +/- 32 deg/s
-    RANGE_64_DPS = 2  # +/- 64 deg/s
-    RANGE_128_DPS = 3  # +/- 128 deg/s
-    RANGE_256_DPS = 4  # +/- 256 deg/s (default value)
-    RANGE_512_DPS = 5  # +/- 512 deg/s
-    RANGE_1024_DPS = 6  # +/- 1024 deg/s
-    RANGE_2048_DPS = 7  # +/- 2048 deg/s
+    RANGE_16_DPS = const(0)  # +/- 16 deg/s
+    RANGE_32_DPS = const(1)  # +/- 32 deg/s
+    RANGE_64_DPS = const(2)  # +/- 64 deg/s
+    RANGE_128_DPS = const(3)  # +/- 128 deg/s
+    RANGE_256_DPS = const(4)  # +/- 256 deg/s (default value)
+    RANGE_512_DPS = const(5)  # +/- 512 deg/s
+    RANGE_1024_DPS = const(6)  # +/- 1024 deg/s
+    RANGE_2048_DPS = const(7)  # +/- 2048 deg/s
 
 
 class AccRate:  # pylint: disable=too-few-public-methods
@@ -112,45 +112,45 @@ class AccRate:  # pylint: disable=too-few-public-methods
 
     """
 
-    RATE_8000_HZ = 0
-    RATE_4000_HZ = 1
-    RATE_2000_HZ = 2
-    RATE_1000_HZ = 3
-    RATE_500_HZ = 4
-    RATE_250_HZ = 5
-    RATE_125_HZ = 6  # (default value)
-    RATE_62_HZ = 7
-    RATE_31_HZ = 8
-    RATE_LP_128_HZ = 12
-    RATE_LP_21_HZ = 13
-    RATE_LP_11_HZ = 14
-    RATE_LP_3_HZ = 15
+    RATE_8000_HZ = const(0)
+    RATE_4000_HZ = const(1)
+    RATE_2000_HZ = const(2)
+    RATE_1000_HZ = const(3)
+    RATE_500_HZ = const(4)
+    RATE_250_HZ = const(5)
+    RATE_125_HZ = const(6)  # (default value)
+    RATE_62_HZ = const(7)
+    RATE_31_HZ = const(8)
+    RATE_LP_128_HZ = const(12)
+    RATE_LP_21_HZ = const(13)
+    RATE_LP_11_HZ = const(14)
+    RATE_LP_3_HZ = const(15)
 
 
 class GyroRate:  # pylint: disable=too-few-public-methods
     """Allowed values for :py:attr:`gyro_rate`.
 
-    * :py:attr:`GyroRate.RATE_8000_HZ`
-    * :py:attr:`GyroRate.RATE_4000_HZ`
-    * :py:attr:`GyroRate.RATE_2000_HZ`
-    * :py:attr:`GyroRate.RATE_1000_HZ`
-    * :py:attr:`GyroRate.RATE_500_HZ`
-    * :py:attr:`GyroRate.RATE_250_HZ`
-    * :py:attr:`GyroRate.RATE_125_HZ`
-    * :py:attr:`GyroRate.RATE_62_HZ`
-    * :py:attr:`GyroRate.RATE_31_HZ`
+    * :py:attr:`GyroRate.RATE_G_8000_HZ`
+    * :py:attr:`GyroRate.RATE_G_4000_HZ`
+    * :py:attr:`GyroRate.RATE_G_2000_HZ`
+    * :py:attr:`GyroRate.RATE_G_1000_HZ`
+    * :py:attr:`GyroRate.RATE_G_500_HZ`
+    * :py:attr:`GyroRate.RATE_G_250_HZ`
+    * :py:attr:`GyroRate.RATE_G_125_HZ`
+    * :py:attr:`GyroRate.RATE_G_62_HZ`
+    * :py:attr:`GyroRate.RATE_G_31_HZ`
 
     """
 
-    RATE_8000_HZ = 0
-    RATE_4000_HZ = 1
-    RATE_2000_HZ = 2
-    RATE_1000_HZ = 3
-    RATE_500_HZ = 4
-    RATE_250_HZ = 5
-    RATE_125_HZ = 6  # (default value)
-    RATE_62_HZ = 7
-    RATE_31_HZ = 8
+    RATE_G_8000_HZ = const(0)
+    RATE_G_4000_HZ = const(1)
+    RATE_G_2000_HZ = const(2)
+    RATE_G_1000_HZ = const(3)
+    RATE_G_500_HZ = const(4)
+    RATE_G_250_HZ = const(5)
+    RATE_G_125_HZ = const(6)  # (default value)
+    RATE_G_62_HZ = const(7)
+    RATE_G_31_HZ = const(8)
 
 
 class QMI8658C:  # pylint: disable=too-many-instance-attributes
@@ -203,11 +203,11 @@ class QMI8658C:  # pylint: disable=too-many-instance-attributes
     _accelerometer_enable = RWBits(1, 0x08, 0)
     _gyro_enable = RWBits(1, 0x08, 1)
 
-    _raw_time_data = StructArray(_QMI8658C_TIME_OUT, "<H", 3)
-    _raw_temp_data = StructArray(_QMI8658C_TEMP_OUT, "B", 2)  #
-    _raw_accel_data = StructArray(_QMI8658C_ACCEL_OUT, "<h", 6)
-    _raw_gyro_data = StructArray(_QMI8658C_GYRO_OUT, "<h", 6)
-    _raw_accel_gyro_data = StructArray(_QMI8658C_ACCEL_OUT, "<h", 12)
+    _raw_time_data = Struct(_QMI8658C_TIME_OUT, "BBB")
+    _raw_temp_data = Struct(_QMI8658C_TEMP_OUT, "BB")
+    _raw_accel_data = Struct(_QMI8658C_ACCEL_OUT, "<hhh")
+    _raw_gyro_data = Struct(_QMI8658C_GYRO_OUT, "<hhh")
+    _raw_accel_gyro_data = Struct(_QMI8658C_ACCEL_OUT, "<hhhhhh")
 
     # these vars are called very frequently
     _acc_scale = 1
@@ -233,7 +233,7 @@ class QMI8658C:  # pylint: disable=too-many-instance-attributes
         # self._ctrl3 = (5 << 4) + 0b0110
         self.gyro_range = GyroRange.RANGE_512_DPS
         sleep(0.01)
-        self.gyro_rate = GyroRate.RATE_125_HZ
+        self.gyro_rate = GyroRate.RATE_G_125_HZ
         sleep(0.01)
         # REG CTRL4 : No magnetometer
         self._ctrl4 = 0x00
@@ -253,22 +253,19 @@ class QMI8658C:  # pylint: disable=too-many-instance-attributes
     def timestamp(self) -> int:
         """Timestamp from boot up"""
         raw_timestamp = self._raw_time_data
-        return raw_timestamp[0][0]
+        return raw_timestamp[0] + (raw_timestamp[1] << 8) + (raw_timestamp[2] << 16)
 
     @property
     def temperature(self) -> float:
         """Chip temperature"""
         raw_temperature = self._raw_temp_data
-        temp = raw_temperature[0][0] / 256 + raw_temperature[1][0]
+        temp = raw_temperature[0] / 256 + raw_temperature[1]
         return temp
 
     @property
     def acceleration(self) -> Tuple[float, float, float]:
         """Acceleration X, Y, and Z axis data in :math:`m/s^2`"""
-        raw_data = self._raw_accel_data
-        raw_x = raw_data[0][0]
-        raw_y = raw_data[1][0]
-        raw_z = raw_data[2][0]
+        raw_x, raw_y, raw_z = self._raw_accel_data
 
         # setup range dependant scaling
         accel_x = (raw_x / self._acc_scale) * STANDARD_GRAVITY
@@ -280,10 +277,7 @@ class QMI8658C:  # pylint: disable=too-many-instance-attributes
     @property
     def gyro(self) -> Tuple[float, float, float]:
         """Gyroscope X, Y, and Z axis data in :math:`rad/s`"""
-        raw_data = self._raw_gyro_data
-        raw_x = raw_data[0][0]
-        raw_y = raw_data[1][0]
-        raw_z = raw_data[2][0]
+        raw_x, raw_y, raw_z = self._raw_gyro_data
 
         # setup range dependant scaling
         gyro_x = radians(raw_x / self._gyro_scale)
@@ -298,12 +292,12 @@ class QMI8658C:  # pylint: disable=too-many-instance-attributes
         raw_data = self._raw_accel_gyro_data
 
         return (
-            raw_data[0][0],
-            raw_data[1][0],
-            raw_data[2][0],
-            raw_data[3][0],
-            raw_data[4][0],
-            raw_data[5][0],
+            raw_data[0],
+            raw_data[1],
+            raw_data[2],
+            raw_data[3],
+            raw_data[4],
+            raw_data[5],
         )
 
     @property
@@ -339,7 +333,8 @@ class QMI8658C:  # pylint: disable=too-many-instance-attributes
             raise ValueError("accelerometer_rate must be a AccRate")
 
         if 12 <= value <= 15 and self._gyro_enable == 1:
-            raise ValueError("accelerometer low power mode must be a gyro disabled")
+            raise ValueError(
+                "accelerometer low power mode must be a gyro disabled")
 
         self._accelerometer_rate = value
         sleep(0.01)

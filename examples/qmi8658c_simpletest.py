@@ -20,5 +20,6 @@ while True:
     print(f"Acceleration: X:{ac[0]:.2f}, Y:{ac[1]:.2f}, Z:{ac[2]:.2f} m/s^2")
     print(f"Gyro X:{gy[0]:.2f}, Y:{gy[1]:.2f}, Z:{gy[2]:.2f} rad/s")
     print(f"Temperature: {sensor.temperature:.2f} C")
+    print(f"Timestamp: {sensor.timestamp}")
 
     time.sleep(1)
