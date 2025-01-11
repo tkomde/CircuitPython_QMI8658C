@@ -71,7 +71,7 @@ Usage Example
     import qmi8658c
 
     i2c = board.I2C()  # uses board.SCL and board.SDA
-    mpu = qmi8658c.QMI8658C(i2c)
+    sensor = qmi8658c.QMI8658C(i2c)
 
     while True:
         ac = sensor.acceleration
