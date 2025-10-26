@@ -71,6 +71,11 @@ Usage Example
     import qmi8658c
 
     i2c = board.I2C()  # uses board.SCL and board.SDA
+
+    # If board.I2C is not defined, select the actual I²C pins. eg: SDA=GP6, SCL=GP7
+    # import busio
+    # i2c = busio.I2C(board.GP7, board.GP6)
+
     sensor = qmi8658c.QMI8658C(i2c)
 
     while True:
