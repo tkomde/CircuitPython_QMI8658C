@@ -30,13 +30,15 @@ __repo__ = "https://github.com/jins-tkomoda/CircuitPython_QMI8658C.git"
 
 from math import radians
 from time import sleep
-from micropython import const
-from adafruit_register.i2c_struct import ROUnaryStruct, Struct
-from adafruit_register.i2c_bits import RWBits
+
 from adafruit_bus_device import i2c_device
+from adafruit_register.i2c_bits import RWBits
+from adafruit_register.i2c_struct import ROUnaryStruct, Struct
+from micropython import const
 
 try:
     from typing import Tuple
+
     from busio import I2C
 except ImportError:
     pass

@@ -7,8 +7,10 @@ Sample script for MPU6886
 """
 
 import time
+
 import board
 from busio import I2C
+
 import qmi8658c
 
 i2c = I2C(board.IMU_SCL, board.IMU_SDA)
